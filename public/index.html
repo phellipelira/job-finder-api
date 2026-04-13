@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard de Leads</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      margin-top: 6px;
+      font-size: 14px;
+    }
+
+    .button {
+      background: #22c55e;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .button:hover {
+      background: #16a34a;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-label {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .table-wrapper {
+      background: #1e293b;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #334155;
+    }
+
+    th, td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+      font-size: 14px;
+      vertical-align: top;
+    }
+
+    tbody tr:hover {
+      background: #273449;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .pill-high {
+      background: #14532d;
+      color: #bbf7d0;
+    }
+
+    .pill-mid {
+      background: #78350f;
+      color: #fde68a;
+    }
+
+    .pill-low {
+      background: #7f1d1d;
+      color: #fecaca;
+    }
+
+    .link {
+      color: #93c5fd;
+      text-decoration: none;
+    }
+
+    .link:hover {
+      text-decoration: underline;
+    }
+
+    .muted {
+      color: #94a3b8;
+    }
+
+    .status {
+      margin-bottom: 16px;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <div class="title">Dashboard de Leads</div>
+        <div class="subtitle">Monitoramento de vagas do Brasil com score e emails sugeridos</div>
+      </div>
+      <button class="button" onclick="runNow()">Atualizar Leads</button>
+    </div>
+
+    <div class="status" id="status">Carregando dados...</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-label">Total de Leads</div>
+        <div class="card-value" id="totalLeads">0</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Leads Quentes</div>
+        <div class="card-value" id="hotLeads">0</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Com Domínio</div>
+        <div class="card-value" id="withDomain">0</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Com Email Sugerido</div>
+        <div class="card-value" id="withEmail">0</div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Cargo</th>
+            <th>Localização</th>
+            <th>Website</th>
+            <th>Email sugerido</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody id="leadsTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function scoreClass(score) {
+      if (score >= 70) return "pill pill-high";
+      if (score >= 40) return "pill pill-mid";
+      return "pill pill-low";
+    }
+
+    async function loadJobs() {
+      try {
+        document.getElementById("status").innerText = "Carregando leads...";
+        const response = await axios.get("/jobs");
+        const jobs = response.data.jobs || [];
+
+        document.getElementById("totalLeads").innerText = jobs.length;
+        document.getElementById("hotLeads").innerText = jobs.filter(j => j.score >= 70).length;
+        document.getElementById("withDomain").innerText = jobs.filter(j => j.domain).length;
+        document.getElementById("withEmail").innerText = jobs.filter(j => j.possibleEmails && j.possibleEmails.length > 0).length;
+
+        const table = document.getElementById("leadsTable");
+        table.innerHTML = "";
+
+        jobs.forEach(job => {
+          const email = job.possibleEmails?.[0] || "—";
+          const website = job.website
+            ? `<a class="link" href="${job.website}" target="_blank">Abrir</a>`
+            : `<span class="muted">—</span>`;
+
+          table.innerHTML += `
+            <tr>
+              <td>${job.company}</td>
+              <td>${job.position}</td>
+              <td>${job.location}</td>
+              <td>${website}</td>
+              <td>${email}</td>
+              <td><span class="${scoreClass(job.score)}">${job.score}</span></td>
+            </tr>
+          `;
+        });
+
+        document.getElementById("status").innerText = `Última carga: ${new Date().toLocaleString("pt-BR")}`;
+      } catch (error) {
+        document.getElementById("status").innerText = "Erro ao carregar leads.";
+        console.error(error);
+      }
+    }
+
+    async function runNow() {
+      try {
+        document.getElementById("status").innerText = "Atualizando leads...";
+        await axios.get("/run-now");
+        await loadJobs();
+        document.getElementById("status").innerText = `Atualizado com sucesso em ${new Date().toLocaleString("pt-BR")}`;
+      } catch (error) {
+        document.getElementById("status").innerText = "Erro ao atualizar leads.";
+        console.error(error);
+      }
+    }
+
+    loadJobs();
+  </script>
+</body>
+</html>
