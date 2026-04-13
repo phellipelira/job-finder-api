@@ -1,0 +1,30 @@
+{
+  "name": "job-leads-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:push": "prisma db push",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "axios": "^1.15.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1",
+    "node-cron": "^4.2.1",
+    "prisma": "^6.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

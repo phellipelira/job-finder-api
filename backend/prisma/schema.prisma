@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id             String   @id @default(cuid())
+  source         String   @default("adzuna")
+  title          String
+  company        String
+  location       String
+  description    String   @db.Text
+  redirectUrl    String
+  companyDomain  String?
+  suggestedEmail String?
+  score          Int
+  isRemote       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@unique([source, redirectUrl])
+  @@index([score])
+  @@index([company])
+}

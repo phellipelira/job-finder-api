@@ -3,10 +3,12 @@ require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 const cron = require("node-cron");
+const path = require("path");
 const { google } = require("googleapis");
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
 const PORT = process.env.PORT || 3000;
 
@@ -16,12 +18,12 @@ const LEADS_SHEET_NAME = "Página1";
 const DASHBOARD_SHEET_NAME = "Dashboard";
 const SERVICE_ACCOUNT_FILE = "./service-account.json";
 
-// Horário diário: 08:00
-const DAILY_CRON = "0 8 * * *";
-
 // ====== ADZUNA ======
 const APP_ID = process.env.ADZUNA_APP_ID;
 const APP_KEY = process.env.ADZUNA_APP_KEY;
+
+// ====== AGENDAMENTO ======
+const DAILY_CRON = "0 8 * * *";
 
 // ====== FILTRO ======
 const blacklist = [
@@ -175,9 +177,7 @@ async function ensureSheetExists(sheetName) {
   const { sheets, allSheets } = await getSpreadsheetMeta();
 
   const existing = allSheets.find(s => s.properties.title === sheetName);
-  if (existing) {
-    return existing.properties.sheetId;
-  }
+  if (existing) return existing.properties.sheetId;
 
   const addRes = await sheets.spreadsheets.batchUpdate({
     spreadsheetId: SHEET_ID,
@@ -598,7 +598,7 @@ async function applyDashboardFormatting() {
   });
 }
 
-// ====== PROCESSO PRINCIPAL ======
+// ====== PIPELINE ======
 async function runDailyPipeline() {
   await ensureSheetExists(LEADS_SHEET_NAME);
   await ensureSheetExists(DASHBOARD_SHEET_NAME);
@@ -625,7 +625,7 @@ async function runDailyPipeline() {
   };
 }
 
-// ====== AGENDAMENTO DIÁRIO ======
+// ====== CRON ======
 cron.schedule(DAILY_CRON, async () => {
   console.log(`[CRON] Iniciando rotina diária em ${new Date().toLocaleString("pt-BR")}`);
 
@@ -639,7 +639,7 @@ cron.schedule(DAILY_CRON, async () => {
 
 // ====== ROTAS ======
 app.get("/", (req, res) => {
-  res.send("API rodando 🚀");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.get("/jobs", async (req, res) => {

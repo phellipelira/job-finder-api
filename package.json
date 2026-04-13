@@ -1,23 +1,35 @@
 {
-  "name": "job-finder-api",
+  "name": "job-finder-saas-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "axios": "^1.15.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1",
+    "node-cron": "^4.2.1",
+    "prisma": "^6.6.0"
+  },
+  "description": "\"# job-finder-api\"",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phellipelira/job-finder-api.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "axios": "^1.15.0",
-    "cheerio": "^1.2.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.1",
-    "express": "^5.2.1",
-    "googleapis": "^171.4.0",
-    "node-cron": "^4.2.1",
-    "puppeteer": "^24.40.0"
-  }
+  "bugs": {
+    "url": "https://github.com/phellipelira/job-finder-api/issues"
+  },
+  "homepage": "https://github.com/phellipelira/job-finder-api#readme"
 }
